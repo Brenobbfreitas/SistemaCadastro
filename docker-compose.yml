@@ -1,0 +1,43 @@
+
+services:
+  # Aplicação Next.js (Node 20 Alpine)
+  app:
+    env_file: 
+      - .env
+    container_name: sistema_nextjs
+    build:
+      context: ./next-app
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    volumes:
+      - ./next-app:/app
+      - /app/node_modules
+    # Monta a URL de conexão usando as variáveis do .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+    depends_on:
+      - db
+    networks:
+      - sistema_net
+
+  # Banco de Dados (Postgres 15.5 Alpine - Fixo)
+  db:
+    container_name: sistema_postgres
+    image: postgres:15.5-alpine
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env  # Lê as variáveis do arquivo que criamos no Passo 2
+    networks:
+      - sistema_net
+
+volumes:
+  pgdata:
+
+networks:
+  sistema_net:
+    driver: bridge
