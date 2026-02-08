@@ -88,3 +88,19 @@ Segurança de Sessão: Valida se o ID alvo é igual ao ID da sessão atual.
 Logout Reativo: Força o encerramento da sessão caso o usuário esteja excluindo o próprio perfil.
 
 Sincronização: Remove o registro do banco de dados e atualiza a cache do Next.js.
+
+
+## Notas de Ambiente (Docker & Prisma)
+
+Este projeto utiliza **Prisma ORM** dentro de containers Docker. 
+
+### Imagem Base
+- Foi utilizada a imagem `node:20-slim` (Debian) em vez de Alpine, para garantir compatibilidade nativa com as bibliotecas `openssl 3.0.x`.
+
+### Configuração do Prisma (`schema.prisma`)
+Para rodar em diferentes ambientes (Windows/WSL e Docker), o `generator` do cliente deve incluir:
+```prisma
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
