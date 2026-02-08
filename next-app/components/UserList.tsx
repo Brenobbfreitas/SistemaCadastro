@@ -1,8 +1,7 @@
 'use client'
 
 import {useState} from 'react'
-import {updateUser} from '@/app/actions'
-import { deleteUser } from '@/app/actions'
+import { deleteUser, updateUser } from '@/app/actions/userActions'
 import { Trash2 } from 'lucide-react'
 
 interface User { id: number; name: string | null; email: string | null; createdAt: Date }

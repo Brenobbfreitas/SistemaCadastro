@@ -1,4 +1,4 @@
-import { getUsers } from "../actions";
+import { getUsers } from "../actions/userActions";
 import UserList from "@/components/UserList";
 export const dynamic = 'force-dynamic';
 
