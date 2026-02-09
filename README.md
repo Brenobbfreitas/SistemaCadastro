@@ -33,11 +33,12 @@ NEXTAUTH_SECRET="<sua-chave>"
 Execute o comando de inicialização no terminal:docker compose up -d
 
 O sistema estará disponível em: http://localhost:3000
+
 📝 Cheatsheet de Comandos
 Aqui estão alguns comandos úteis para gerenciar o projeto containerizado:
 
-Ação
-Comando
+Ação -
+Comando -
 Ver Logs em tempo real
 docker compose logs -f app
 Reiniciar servidor
