@@ -1,6 +1,6 @@
 
 services:
-  # Aplicação Next.js (Node 20 Alpine)
+  # Aplicação Next.js (Modo Desenvolvimento)
   app:
     env_file: 
       - .env
@@ -18,13 +18,11 @@ services:
       - /app/.next
     # Monta a URL de conexão usando as variáveis do .env
     environment:
-      - DATABASE_URL=postgresql://admin_sistema:SuaSenhaSeguraAqui123@db:5432/sistema?schema=public
+
       - PRISMA_CLI_QUERY_ENGINE_TYPE=binary
       - PRISMA_CLIENT_ENGINE_TYPE=binary # <--- ESSA LINHA É A CHAVE
-      - AUTH_SECRET=6wgGOS3afMYEIwtw6HlLRSKclWBihsncV+YRQDrdtss=
       - AUTH_TRUST_HOST=true
-      - PRISMA_CLI_QUERY_ENGINE_TYPE=binary
-      - PRISMA_CLIENT_ENGINE_TYPE=binary
+
     depends_on:
       - db
     networks:
