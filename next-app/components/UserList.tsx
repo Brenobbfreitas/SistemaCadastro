@@ -1,5 +1,6 @@
 'use client' // Necessário porque usamos hooks de estado (useState) para controlar o modal
 
+import { toast } from "react-hot-toast";
 import { useState } from 'react'
 import { deleteUser, updateUser } from '@/app/actions/userActions'
 import { Trash2, Edit } from 'lucide-react'
@@ -57,7 +58,10 @@ export default function UserList({ users }: { users: User[] }) {
                 </button>
 
                 {/* FORMULÁRIO EXCLUIR: Chama diretamente a Server Action 'deleteUser' */}
-                <form action={deleteUser}>
+                <form action={deleteUser} 
+                  onSubmit={() => toast.success('Utilizador apagado!')}
+                >
+
                   {/* Input oculto (hidden) envia o ID do utilizador para a função no servidor */}
                   <input type="hidden" name="id" value={user.id} />
                   <button type="submit" className="text-red-500 hover:text-red-400 p-2 hover:bg-red-500/10 rounded-full transition-colors" title="Excluir">
@@ -83,7 +87,11 @@ export default function UserList({ users }: { users: User[] }) {
             <h3 className="text-xl font-bold text-white mb-4">Editar Usuário</h3>
             
             {/* O formulário aciona a Server Action 'updateUser' e depois fecha o modal localmente */}
-            <form action={updateUser} onSubmit={() => setIsModalOpen(false)}>
+            <form 
+              action={updateUser} 
+              onSubmit={() => setIsModalOpen(false);
+              toast.success('Utilizador atualizado com sucesso!');  
+              }>
               
               {/* O ID é obrigatório para a base de dados saber quem atualizar */}
               <input type="hidden" name="id" value={userToEdit?.id}/>

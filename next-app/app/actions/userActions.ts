@@ -11,11 +11,15 @@ import { auth, signOut } from "@/auth";
 // SCHEMAS DE VALIDAÇÃO (ZOD)
 // ==========================================
 
-// 1. Schema para criar utilizador (A senha é obrigatória aqui)
+// 1. Schema para criar utilizador (Agora com confirmação de senha)
 const AddUserSchema = z.object({
   name: z.string().min(3, "O nome deve ter no mínimo 3 caracteres"),
   email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres")
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  confirmPassword: z.string()
+}).refine((dados) => dados.password === dados.confirmPassword, {
+  message: "As senhas não coincidem.",
+  path: ["confirmPassword"], // Aponta o erro para o campo de confirmação
 });
 
 // 2. Schema para atualizar utilizador (Não pedimos senha para editar perfil)

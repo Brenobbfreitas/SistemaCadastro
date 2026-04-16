@@ -9,16 +9,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// ENUMS (Tipos Fixos do Sistema)
+// ==========================================
+enum TransactionType {
+  INCOME   // Receita
+  EXPENSE  // Despesa
+}
+
+enum TransactionStatus {
+  PENDING  // Pendente
+  PAID     // Pago
+}
+
+enum ProjectStatus {
+  PROSPECT   // Orçamento
+  ACTIVE     // Em andamento
+  COMPLETED  // Entregue
+  CANCELED   // Cancelado
+}
+
+// ==========================================
+// MODELOS DE AUTENTICAÇÃO (NextAuth v5)
+// ==========================================
 model User {
   id            Int       @id @default(autoincrement())
-  createdAt      DateTime  @default(now())
+  createdAt     DateTime  @default(now())
   name          String?
   email         String?   @unique
   password      String?
   emailVerified DateTime?
   image         String?
+  
   accounts      Account[]
   sessions      Session[]
+
+  clients       Client[]
+  projects      Project[]
+  wallets       Wallet[]
+  categories    Category[]
+  transactions  Transaction[]
 }
 
 model Account {
@@ -27,16 +57,15 @@ model Account {
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String?  @db.Text
+  id_token           String? @db.Text
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
 }
 
@@ -46,4 +75,91 @@ model Session {
   userId       Int
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// MODELOS DE NEGÓCIO E VENDAS (CRM)
+// ==========================================
+model Client {
+  id          Int       @id @default(autoincrement())
+  name        String    
+  email       String?   
+  phone       String?   
+  
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  title       String        
+  description String?       
+  status      ProjectStatus @default(PROSPECT)
+  totalValue  Decimal       @db.Decimal(10, 2) 
+  dueDate     DateTime?     
+  
+  clientId    Int
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] 
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// ==========================================
+// MODELOS FINANCEIROS (PF e PJ)
+// ==========================================
+model Wallet {
+  id          Int           @id @default(autoincrement())
+  name        String        
+  balance     Decimal       @db.Decimal(10, 2) @default(0.00)
+  
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([name, userId])
+}
+
+model Category {
+  id          Int             @id @default(autoincrement())
+  name        String          
+  type        TransactionType 
+  color       String?         
+  icon        String?         
+  
+  userId      Int
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  @@unique([name, userId])
+}
+
+model Transaction {
+  id                Int               @id @default(autoincrement())
+  description       String            
+  amount            Decimal           @db.Decimal(10, 2)
+  date              DateTime          
+  type              TransactionType   
+  status            TransactionStatus @default(PAID) 
+  installment       Int?              
+  totalInstallments Int?              
+
+  walletId          Int
+  wallet            Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  categoryId        Int
+  category          Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  projectId         Int?
+  project           Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  userId            Int
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
