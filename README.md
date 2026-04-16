@@ -1,4 +1,4 @@
-🚀 Sistema Next.js + Prisma
+🚀
 Este é um projeto Full-Stack containerizado para gerenciamento de usuários, utilizando Next.js 15, Prisma ORM e PostgreSQL. A arquitetura foi refinada para garantir compatibilidade total entre os binários do Prisma e as bibliotecas do sistema operacional, resolvendo gargalos comuns de ambientes virtuais (WSL2/Docker).
 🛠️ Stack Tecnológica
 Frontend/Backend: Next.js 15 (App Router)
