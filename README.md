@@ -38,16 +38,27 @@ O sistema estará disponível em: http://localhost:3000
 Aqui estão alguns comandos úteis para gerenciar o projeto containerizado:
 
 Ação -
+
 Comando -
+
 Ver Logs em tempo real
+
 docker compose logs -f app
+
 Reiniciar servidor
+
 docker compose restart app
+
 Acessar Banco Visualmente
+
 docker compose exec app npx prisma studio
+
 Limpar tudo (Volumes e Containers)
+
 docker compose down -v
+
 Refazer Build Manual
+
 docker compose exec app npm run build
 
 🛠️ Server Actions Implementadas
