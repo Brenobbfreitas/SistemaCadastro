@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {getWallets} from '../actions/walletActions'
+import { getWallets } from '../actions/walletActions'
+import { getRecentTransactions } from '../actions/transactionActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +14,10 @@ export default async function HomePage() {
     redirect("/login");
   }
 
-  // 2. Busca as carteiras do banco de dados vinculadas APENAS a este usuário
+  // 2. Busca as carteiras e transações
   const wallets = await getWallets();
-
+  const transactions = await getRecentTransactions();
+  
   // Função auxiliar para formatar dinheiro (BRL)
   const formatCurrency = (value: any) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -41,7 +43,6 @@ export default async function HomePage() {
               <span className="text-xs text-gray-500">{session.user?.email}</span>
             </div>
             
-            {/* O botão agora aponta para criar uma nova carteira */}
             <Link 
               href="/nova-carteira" 
               className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded transition font-medium"
@@ -80,17 +81,44 @@ export default async function HomePage() {
           )}
         </div>
 
-        {/* Seção 2: Esqueleto para as próximas funcionalidades */}
+        {/* Seção 2: Transações e CRM */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-           <div className="bg-gray-900/40 p-6 rounded-lg border border-gray-800 border-dashed min-h-[300px] flex flex-col">
-              <h2 className="text-lg text-white mb-4 border-l-4 border-blue-500 pl-3 font-semibold">
-                Últimas Transações
-              </h2>
-              <div className="flex-1 flex items-center justify-center">
-                 <p className="text-gray-600 text-sm">Módulo em construção...</p>
+           
+           {/* BLOCO DE TRANSAÇÕES ATUALIZADO */}
+           <div className="bg-gray-900/40 p-6 rounded-lg border border-gray-800 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg text-white border-l-4 border-blue-500 pl-3 font-semibold">
+                  Últimas Transações
+                </h2>
+                <Link href="/nova-transacao" className="text-sm bg-blue-600 hover:bg-blue-500 text-white py-1.5 px-3 rounded transition-colors font-medium">
+                  + Nova
+                </Link>
               </div>
+
+              {transactions.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-500 text-sm italic">Nenhuma movimentação registada.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {transactions.map((tx: any) => (
+                    <div key={tx.id} className="flex justify-between items-center bg-gray-950 p-3 rounded-lg border border-gray-800">
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium text-sm">{tx.description}</span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          {tx.wallet.name} • {new Date(tx.date).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                      <span className={`font-bold text-sm ${tx.type === 'INCOME' ? 'text-green-500' : 'text-red-500'}`}>
+                        {tx.type === 'INCOME' ? '+' : '-'} {formatCurrency(tx.amount)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
            </div>
            
+           {/* BLOCO CRM (Ainda em construção) */}
            <div className="bg-gray-900/40 p-6 rounded-lg border border-gray-800 border-dashed min-h-[300px] flex flex-col">
               <h2 className="text-lg text-white mb-4 border-l-4 border-purple-500 pl-3 font-semibold">
                 Projetos Ativos (CRM)

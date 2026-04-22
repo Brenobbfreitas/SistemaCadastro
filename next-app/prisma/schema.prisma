@@ -1,56 +1,62 @@
+// ==========================================
+// ⚙️ CONFIGURAÇÃO DO PRISMA
+// ==========================================
+// Diz ao Prisma para gerar o cliente em JavaScript/TypeScript e prepara-o para correr no Docker (linux-musl).
 generator client {
   provider      = "prisma-client-js"
   engineType    = "binary"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
+// Conecta-se ao banco de dados PostgreSQL usando a variável de ambiente DATABASE_URL.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 // ==========================================
-// ENUMS (Tipos Fixos do Sistema)
+//  ENUMS (Listas de opções fixas para evitar erros de digitação)
 // ==========================================
 enum TransactionType {
-  INCOME   // Receita
-  EXPENSE  // Despesa
+  INCOME   // Receita (Dinheiro a entrar)
+  EXPENSE  // Despesa (Dinheiro a sair)
 }
 
 enum TransactionStatus {
-  PENDING  // Pendente
-  PAID     // Pago
+  PENDING  // Pendente (Ainda não caiu na conta)
+  PAID     // Pago (Já saiu/entrou na conta)
 }
 
 enum ProjectStatus {
-  PROSPECT   // Orçamento
-  ACTIVE     // Em andamento
-  COMPLETED  // Entregue
+  PROSPECT   // Orçamento (Cliente ainda está a pensar)
+  ACTIVE     // Em andamento (Trabalho a decorrer)
+  COMPLETED  // Entregue (Serviço finalizado)
   CANCELED   // Cancelado
 }
 
 // ==========================================
-// MODELOS DE AUTENTICAÇÃO (NextAuth v5)
+//  MODELOS DE AUTENTICAÇÃO (Obrigatórios para o NextAuth v5)
 // ==========================================
 model User {
-  id            Int       @id @default(autoincrement())
-  createdAt     DateTime  @default(now())
-  name          String?
-  email         String?   @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
+  id            Int       @id @default(autoincrement()) // Chave primária: ID único que cresce sozinho (1, 2, 3...)
+  createdAt     DateTime  @default(now())               // Guarda a data e hora em que a conta foi criada
+  name          String?                                 // Nome do utilizador (O "?" significa que é opcional)
+  email         String?   @unique                       // Email único (não podem haver dois emails iguais no banco)
+  password      String?                                 // Senha encriptada (com bcrypt)
+  emailVerified DateTime?                               // Usado se implementarmos verificação de email
+  image         String?                                 // Foto de perfil
   
+  // 🔗 RELAÇÕES: Um utilizador pode ter "várias" coisas:
   accounts      Account[]
   sessions      Session[]
-
-  clients       Client[]
-  projects      Project[]
-  wallets       Wallet[]
-  categories    Category[]
-  transactions  Transaction[]
+  clients       Client[]      // Um utilizador tem vários clientes (CRM)
+  projects      Project[]     // Um utilizador tem vários projetos (CRM)
+  wallets       Wallet[]      // Um utilizador tem várias carteiras (Financeiro)
+  categories    Category[]    // Um utilizador cria as suas próprias categorias
+  transactions  Transaction[] // Um utilizador tem várias transações
 }
 
+// (Account e Session são tabelas internas do NextAuth para gerir logins com Google/Github e tokens de sessão)
 model Account {
   id                 String  @id @default(cuid())
   userId             Int
@@ -65,7 +71,8 @@ model Account {
   id_token           String? @db.Text
   session_state      String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Cascade: Se o utilizador for apagado, apaga esta conta também
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) 
   @@unique([provider, providerAccountId])
 }
 
@@ -78,33 +85,37 @@ model Session {
 }
 
 // ==========================================
-// MODELOS DE NEGÓCIO E VENDAS (CRM)
+// MODELOS DE NEGÓCIO E VENDAS (Módulo CRM)
 // ==========================================
 model Client {
-  id          Int       @id @default(autoincrement())
-  name        String    
-  email       String?   
-  phone       String?   
+  id        Int       @id @default(autoincrement())
+  name      String    // Ex: "Empresa XPTO"
+  email     String?   
+  phone     String?   
   
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  projects    Project[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  userId    Int       // Quem é o "dono" deste cliente? (O utilizador logado)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects  Project[] // Um cliente pode ter encomendado vários projetos
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt // Atualiza automaticamente sempre que editares o cliente
 }
 
 model Project {
   id          Int           @id @default(autoincrement())
-  title       String        
+  title       String        // Ex: "Criação de Website"
   description String?       
   status      ProjectStatus @default(PROSPECT)
-  totalValue  Decimal       @db.Decimal(10, 2) 
-  dueDate     DateTime?     
+  totalValue  Decimal       @db.Decimal(10, 2) // Dinheiro exato (ex: 1500.50)
+  dueDate     DateTime?     // Data limite de entrega
   
   clientId    Int
+  // Restrict: Não deixa apagar um Cliente se ele ainda tiver Projetos associados
   client      Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
   userId      Int
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Um projeto pode ter recebido vários pagamentos (transações)
   transactions Transaction[] 
 
   createdAt   DateTime      @default(now())
@@ -112,51 +123,62 @@ model Project {
 }
 
 // ==========================================
-// MODELOS FINANCEIROS (PF e PJ)
+// MODELOS FINANCEIROS (Módulo PF e PJ)
 // ==========================================
-model Wallet {
-  id          Int           @id @default(autoincrement())
-  name        String        
-  balance     Decimal       @db.Decimal(10, 2) @default(0.00)
-  
-  userId      Int
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
 
-  @@unique([name, userId])
+model Wallet {
+  id           Int           @id @default(autoincrement())
+  name         String        // Ex: "Conta Empresa", "Nubank"
+  balance      Decimal       @db.Decimal(10, 2) @default(0.00) // Saldo atual
+  
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] // Histórico de transações desta carteira
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // @@unique garante que o utilizador não consegue criar duas carteiras com o nome "Nubank"
+  @@unique([name, userId]) 
 }
 
 model Category {
-  id          Int             @id @default(autoincrement())
-  name        String          
-  type        TransactionType 
-  color       String?         
-  icon        String?         
+  id           Int             @id @default(autoincrement())
+  name         String          // Ex: "Alimentação", "Salário"
+  type         TransactionType // Se a categoria é para Despesa ou para Receita
+  color        String?         // Para pintar os gráficos depois
+  icon         String?         
   
-  userId      Int
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  
   @@unique([name, userId])
 }
 
 model Transaction {
   id                Int               @id @default(autoincrement())
-  description       String            
-  amount            Decimal           @db.Decimal(10, 2)
-  date              DateTime          
-  type              TransactionType   
-  status            TransactionStatus @default(PAID) 
-  installment       Int?              
-  totalInstallments Int?              
+  description       String            // Ex: "Almoço de Negócios"
+  amount            Decimal           @db.Decimal(10, 2) // O valor exato
+  date              DateTime          // Quando aconteceu
+  type              TransactionType   // INCOME ou EXPENSE
+  status            TransactionStatus @default(PAID) // Se já foi pago ou está pendente
+  installment       Int?              // Ex: Parcela 1
+  totalInstallments Int?              // Ex: de 12 (Fica: Parcela 1/12)
 
+  // 🔗 RELAÇÕES: Onde o dinheiro mexeu?
   walletId          Int
   wallet            Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  // A que categoria pertence?
   categoryId        Int
   category          Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  
+  // Pertence a algum projeto específico do CRM? (Opcional)
   projectId         Int?
+  // SetNull: Se apagares o projeto, a transação continua a existir (o dinheiro já entrou), mas perde a ligação
   project           Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
   userId            Int
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
