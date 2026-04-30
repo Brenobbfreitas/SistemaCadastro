@@ -40,7 +40,11 @@ export async function getWallets() {
       orderBy: { createdAt: 'asc' }
     });
     
-    return wallets;
+    return wallets.map(wallet => ({
+      ...wallet,
+      balance: Number(wallet.balance)
+    }));
+
   } catch (error) {
     console.error("Erro ao buscar carteiras:", error);
     return [];
