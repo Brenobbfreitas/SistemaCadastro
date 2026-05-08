@@ -1,79 +1,90 @@
-🚀
-Este é um projeto Full-Stack containerizado para gerenciamento de usuários, utilizando Next.js 15, Prisma ORM e PostgreSQL. A arquitetura foi refinada para garantir compatibilidade total entre os binários do Prisma e as bibliotecas do sistema operacional, resolvendo gargalos comuns de ambientes virtuais (WSL2/Docker).
-🛠️ Stack Tecnológica
-Frontend/Backend: Next.js 15 (App Router)
-Banco de Dados: PostgreSQL
-ORM: Prisma
-Segurança: Bcryptjs (Hash de senhas) e Server Actions.
-Infraestrutura: Docker (Image: Node:20-slim)
+# 💼 SysManager - Finanças & CRM
 
+![Next.js](https://img.shields.io/badge/Next.js-16.1-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
 
-🐋 Arquitetura e Estabilidade (Docker)
-Diferente de configurações padrão, este projeto utiliza a imagem base Debian-Slim em vez de Alpine. Isso garante que as dependências do openssl 3.0.x necessárias para o motor do Prisma funcionem nativamente, eliminando erros de "Shared Library" ou "Symbol not found".
+O **SysManager** é uma aplicação Full-Stack desenvolvida para resolver um problema real de profissionais independentes e freelancers: a mistura do fluxo de caixa pessoal com as finanças do negócio. 
 
-Configuração Crítica (schema.prisma)
-O gerador está configurado para ser resiliente em múltiplos ambientes:generator client {
+O sistema unifica a gestão financeira (carteiras e transações) com um módulo de CRM (clientes e orçamentos/projetos), permitindo rastrear exatamente de onde o dinheiro vem e para onde vai.
 
-  provider        = "prisma-client-js"
+## ✨ Funcionalidades Principais
 
-  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+* **💰 Gestão Financeira:** Criação de múltiplas carteiras (ex: Banco X, Corretora Y) e registo de transações (Entradas e Saídas).
+* **🤝 Módulo CRM:** Registo de Clientes e criação de Projetos/Orçamentos atrelados a eles.
+* **📊 Dashboard Dinâmico:** Visão geral em tempo real dos saldos atualizados e últimos projetos ativos.
 
-}
+## 🧠 Regra de Negócio Central (O "Pulo do Gato")
 
-⚡ Como Rodar o Projeto
-1. Pré-requisitos
-Docker Desktop instalado e rodando.
-Nota: Não é necessário instalar Node ou Postgres localmente.
-2. Variáveis de Ambiente
-Crie um arquivo .env na raiz:DATABASE_URL="postgresql://user:password@db:5432/mydatabase?schema=public"
+A grande vantagem arquitetural do SysManager é a sua lógica de separação de caixa dentro da mesma base de dados:
+* Transações **com** um `projectId` vinculado são classificadas automaticamente como *Faturamento ou Custo da Empresa*.
+* Transações **sem** um `projectId` vinculado são classificadas como *Finanças Pessoais*.
+Isto permite ter as finanças misturadas no mesmo banco de dados, mas perfeitamente separadas e filtráveis no Dashboard.
 
-NEXTAUTH_SECRET="<sua-chave>"
+## 🛠️ Stack Tecnológica
 
-3. Inicialização
-Execute o comando de inicialização no terminal:docker compose up -d
+O projeto foi construído com as tecnologias mais modernas do ecossistema React/Node:
 
-O sistema estará disponível em: http://localhost:3000
+* **Framework:** [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
+* **Linguagem:** TypeScript
+* **Banco de Dados & ORM:** PostgreSQL + [Prisma](https://www.prisma.io/)
+* **Autenticação:** [NextAuth.js (v5)](https://authjs.dev/)
+* **Validação:** [Zod](https://zod.dev/)
+* **Estilização:** Tailwind CSS + UI Components
+* **Infraestrutura:** Docker & Docker Compose (Ambiente 100% containerizado)
 
-📝 Cheatsheet de Comandos
-Aqui estão alguns comandos úteis para gerenciar o projeto containerizado:
+## 🏗️ Arquitetura do Projeto
 
-Ação -
+A aplicação segue rigorosamente as melhores práticas de separação de responsabilidades introduzidas pelo Next.js App Router:
 
-Comando -
+* **`/app/actions`**: O "Cérebro" (Backend). Aqui vivem as **Server Actions** (`'use server'`). Nenhuma lógica de banco de dados vaza para o front-end. Todas as entradas são validadas pelo Zod antes de tocarem no Prisma.
+* **`/app/(rotas)`**: Os **Client Components** (`'use client'`). Formulários interativos e Dashboards que consomem as Server Actions de forma assíncrona.
+* **Componentes Puros:** Componentes de UI (Inputs, Buttons) reutilizáveis.
 
-Ver Logs em tempo real
+## 🐛 Desafios Técnicos Superados 
+Durante o desenvolvimento da V1.0, vários desafios complexos foram resolvidos, solidificando a estabilidade do sistema:
+1. **Serialização Server-to-Client:** Resolução do conflito entre o tipo `Decimal` do Prisma e as restrições de props do Next.js Client Components, implementando conversores via JavaScript nativo (`Number()`).
+2. **Gestão de Infraestrutura Docker:** Tratamento de permissões de utilizador (`EACCES: permission denied`) no Linux/WSL para garantir que instalações via NPM no host reflitam corretamente no container.
+3. **Sincronização de Schema:** Mapeamento correto de cache e regeneração do Prisma Client por dentro do container Turbopack.
 
-docker compose logs -f app
+## 🚀 Próximos Passos (Roadmap V1.1)
 
-Reiniciar servidor
+- [ ] Conversão automática de projetos com status "COMPLETED" em transações financeiras reais.
+- [ ] Gráficos analíticos cruzando gastos pessoais vs. faturamento de projetos.
+- [ ] Operações completas de edição e exclusão (CRUD) para transações e projetos.
+- [ ] Filtros avançados por data e categoria no Dashboard.
 
-docker compose restart app
+## 💻 Como rodar o projeto localmente
 
-Acessar Banco Visualmente
+Como a aplicação é containerizada com Docker, subir o ambiente é extremamente simples.
 
-docker compose exec app npx prisma studio
+### Pré-requisitos
+* [Docker](https://www.docker.com/) e Docker Compose instalados.
+* Node.js (opcional, recomendado para intellisense no editor).
 
-Limpar tudo (Volumes e Containers)
+### Passo a Passo
 
-docker compose down -v
+1. **Clone o repositório:**
+```bash
+git clone [https://github.com/SeuUsuario/SistemaCadastro.git](https://github.com/SeuUsuario/SistemaCadastro.git)
+cd SistemaCadastro
 
-Refazer Build Manual
+# Conexão interna do Docker (Aplicação -> Banco)
+DATABASE_URL="postgresql://postgres:root@db:5432/sysmanager?schema=public"
 
-docker compose exec app npm run build
+# Configuração de Autenticação (NextAuth)
+AUTH_SECRET="sua_chave_secreta_aqui_pode_ser_qualquer_texto"
+AUTH_URL="http://localhost:3000"
 
-🛠️ Server Actions Implementadas
-A lógica de negócio está protegida no servidor, utilizando as novas Server Actions do Next.js:
+3. **Inicialização do Projeto
+docker compose up -d
 
-addUser: Realiza hash da senha (12 rounds) e persiste no Postgres.
-getUsers: Recupera usuários ordenados por data de criação.
-deleteUser: Exclusão segura com validação de sessão ativa.
-login / logout: Gestão de autenticação assíncrona.
+# Gera o cliente de tradução do Prisma
+docker compose exec app npx prisma generate
 
-⚠️ Solução de Problemas
-Se o Prisma reportar erro de inicialização ou "Engine not found":
+# Sincroniza as tabelas com o PostgreSQL
+docker compose exec app npx prisma db push
 
-Verifique se o binaryTargets no schema.prisma inclui debian-openssl-3.0.x.
-Rode docker compose exec app npx prisma generate novamente.
-Reinicie o container com docker compose restart app.
-
-
+Abra o seu navegador e acesse: http://localhost:3000

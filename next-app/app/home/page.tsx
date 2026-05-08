@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getWallets } from '../actions/walletActions'
 import { getRecentTransactions } from '../actions/transactionActions';
+import { getRecentProjects } from '../actions/projectActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,8 @@ export default async function HomePage() {
   // 2. Busca as carteiras e transações
   const wallets = await getWallets();
   const transactions = await getRecentTransactions();
-  
+  const projects = await getRecentProjects();
+
   // Função auxiliar para formatar dinheiro (BRL)
   const formatCurrency = (value: any) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -118,14 +120,52 @@ export default async function HomePage() {
               )}
            </div>
            
-           {/* BLOCO CRM (Ainda em construção) */}
-           <div className="bg-gray-900/40 p-6 rounded-lg border border-gray-800 border-dashed min-h-[300px] flex flex-col">
-              <h2 className="text-lg text-white mb-4 border-l-4 border-purple-500 pl-3 font-semibold">
-                Projetos Ativos (CRM)
-              </h2>
-              <div className="flex-1 flex items-center justify-center">
-                 <p className="text-gray-600 text-sm">Módulo em construção...</p>
+           {/* BLOCO CRM ATUALIZADO */}
+           <div className="bg-gray-900/40 p-6 rounded-lg border border-gray-800 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg text-white border-l-4 border-purple-500 pl-3 font-semibold">
+                  Projetos Ativos (CRM)
+                </h2>
+                <Link href="/novo-projeto" className="text-sm bg-purple-600 hover:bg-purple-500 text-white py-1.5 px-3 rounded transition-colors font-medium">
+                  + Novo
+                </Link>
               </div>
+
+              {projects.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-gray-500 text-sm italic">Nenhum projeto ativo.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {projects.map((project: any) => (
+                    <div key={project.id} className="flex justify-between items-center bg-gray-950 p-3 rounded-lg border border-gray-800 hover:border-purple-500/50 transition-colors">
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium text-sm">{project.title}</span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          {project.client?.name} • 
+                          <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                            ${project.status === 'ACTIVE' ? 'bg-blue-500/20 text-blue-400' : 
+                              project.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' : 
+                              'bg-gray-700 text-gray-300'}`}
+                          >
+                            {project.status === 'ACTIVE' ? 'Ativo' : project.status === 'COMPLETED' ? 'Concluído' : 'Orçamento'}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="font-bold text-sm text-purple-400">
+                          {formatCurrency(project.totalValue)}
+                        </span>
+                        {project.dueDate && (
+                          <span className="text-[10px] text-gray-500 mt-1">
+                            Prazo: {new Date(project.dueDate).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
            </div>
         </div>
 
