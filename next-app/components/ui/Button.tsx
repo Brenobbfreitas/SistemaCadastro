@@ -1,43 +1,26 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
   isLoading?: boolean;
-  variant?: "primary" | "success" | "danger";
+  variant?: "primary" | "danger" | "outline";
 }
 
-export function Button({ 
-  children, 
-  isLoading, 
-  variant = "primary", // Azul por padrão
-  ...props 
-}: ButtonProps) {
+export function Button({ children, isLoading, variant = "primary", ...props }: ButtonProps) {
+  const baseStyles = "font-medium rounded-md py-2.5 px-4 transition-colors flex items-center justify-center text-sm";
   
-  // Classes que todos os botões partilham
-  const baseClasses = "text-white font-bold py-3 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center w-full uppercase text-sm tracking-wide mt-2";
-  
-  // Dicionário de cores
   const variants = {
-    primary: "bg-blue-600 hover:bg-blue-700",
-    success: "bg-green-600 hover:bg-green-700",
-    danger: "bg-red-600 hover:bg-red-700",
+    primary: "bg-purple-600 hover:bg-purple-700 text-white",
+    danger: "bg-red-600 hover:bg-red-700 text-white",
+    outline: "bg-transparent border border-gray-600 hover:bg-gray-800 text-white"
   };
 
   return (
-    <button
-      {...props}
+    <button 
+      className={`${baseStyles} ${variants[variant]} ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
       disabled={isLoading || props.disabled}
-      className={`${baseClasses} ${variants[variant]} ${props.className || ''}`}
+      {...props}
     >
-      {/* Se estiver a carregar, mostra o spinner, senão mostra o texto normal */}
-      {isLoading ? (
-        <span className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          Aguarde...
-        </span>
-      ) : (
-        children
-      )}
+      {isLoading ? "Carregando..." : children}
     </button>
   );
 }
