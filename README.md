@@ -3,88 +3,178 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
 
-O **SysManager** é uma aplicação Full-Stack desenvolvida para resolver um problema real de profissionais independentes e freelancers: a mistura do fluxo de caixa pessoal com as finanças do negócio. 
+> Um sistema completo de **gestão financeira + CRM** para profissionais independentes e freelancers separarem finanças pessoais da empresa.
 
-O sistema unifica a gestão financeira (carteiras e transações) com um módulo de CRM (clientes e orçamentos/projetos), permitindo rastrear exatamente de onde o dinheiro vem e para onde vai.
+---
 
-## ✨ Funcionalidades Principais
+## 🎯 O Que Já Foi Feito
 
-* **💰 Gestão Financeira:** Criação de múltiplas carteiras (ex: Banco X, Corretora Y) e registo de transações (Entradas e Saídas).
-* **🤝 Módulo CRM:** Registo de Clientes e criação de Projetos/Orçamentos atrelados a eles.
-* **📊 Dashboard Dinâmico:** Visão geral em tempo real dos saldos atualizados e últimos projetos ativos.
+### ✅ Funcionalidades Implementadas
 
-## 🧠 Regra de Negócio Central (O "Pulo do Gato")
+- **💰 Gestão Financeira**
+  - Criação de múltiplas carteiras (Banco, Corretora, etc)
+  - Registro de transações (Entradas e Saídas)
+  - Saldos atualizados em tempo real
 
-A grande vantagem arquitetural do SysManager é a sua lógica de separação de caixa dentro da mesma base de dados:
-* Transações **com** um `projectId` vinculado são classificadas automaticamente como *Faturamento ou Custo da Empresa*.
-* Transações **sem** um `projectId` vinculado são classificadas como *Finanças Pessoais*.
-Isto permite ter as finanças misturadas no mesmo banco de dados, mas perfeitamente separadas e filtráveis no Dashboard.
+- **🤝 Módulo CRM**
+  - Cadastro de clientes
+  - Criação de projetos/orçamentos
+  - Vinculação de projetos com transações
 
-## 🛠️ Stack Tecnológica
+- **📊 Dashboard Dinâmico**
+  - Visão geral dos saldos
+  - Últimos projetos ativos
+  - Separação automática: Finanças Pessoais vs Faturamento da Empresa
 
-O projeto foi construído com as tecnologias mais modernas do ecossistema React/Node:
+---
 
-* **Framework:** [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
-* **Linguagem:** TypeScript
-* **Banco de Dados & ORM:** PostgreSQL + [Prisma](https://www.prisma.io/)
-* **Autenticação:** [NextAuth.js (v5)](https://authjs.dev/)
-* **Validação:** [Zod](https://zod.dev/)
-* **Estilização:** Tailwind CSS + UI Components
-* **Infraestrutura:** Docker & Docker Compose (Ambiente 100% containerizado)
+## 🧠 A Lógica Genial do Sistema
 
-## 🏗️ Arquitetura do Projeto
+A grande vantagem do **SysManager** é separar caixa na **mesma base de dados**:
 
-A aplicação segue rigorosamente as melhores práticas de separação de responsabilidades introduzidas pelo Next.js App Router:
+```
+✓ Transação COM projectId → Faturamento/Custo da Empresa
+✓ Transação SEM projectId → Finanças Pessoais
+```
 
-* **`/app/actions`**: O "Cérebro" (Backend). Aqui vivem as **Server Actions** (`'use server'`). Nenhuma lógica de banco de dados vaza para o front-end. Todas as entradas são validadas pelo Zod antes de tocarem no Prisma.
-* **`/app/(rotas)`**: Os **Client Components** (`'use client'`). Formulários interativos e Dashboards que consomem as Server Actions de forma assíncrona.
-* **Componentes Puros:** Componentes de UI (Inputs, Buttons) reutilizáveis.
+Tudo filtrado e separado no Dashboard, sem necessidade de múltiplos bancos.
 
-## 🐛 Desafios Técnicos Superados 
-Durante o desenvolvimento da V1.0, vários desafios complexos foram resolvidos, solidificando a estabilidade do sistema:
-1. **Serialização Server-to-Client:** Resolução do conflito entre o tipo `Decimal` do Prisma e as restrições de props do Next.js Client Components, implementando conversores via JavaScript nativo (`Number()`).
-2. **Gestão de Infraestrutura Docker:** Tratamento de permissões de utilizador (`EACCES: permission denied`) no Linux/WSL para garantir que instalações via NPM no host reflitam corretamente no container.
-3. **Sincronização de Schema:** Mapeamento correto de cache e regeneração do Prisma Client por dentro do container Turbopack.
+---
 
-## 🚀 Próximos Passos (Roadmap V1.1)
+## 🛠️ Stack Tecnológico
 
-- [ ] Conversão automática de projetos com status "COMPLETED" em transações financeiras reais.
-- [ ] Gráficos analíticos cruzando gastos pessoais vs. faturamento de projetos.
-- [ ] Operações completas de edição e exclusão (CRUD) para transações e projetos.
-- [ ] Filtros avançados por data e categoria no Dashboard.
+| Categoria | Tecnologia |
+|-----------|-----------|
+| **Framework** | Next.js 16 (App Router) |
+| **Linguagem** | TypeScript |
+| **Banco de Dados** | PostgreSQL |
+| **ORM** | Prisma |
+| **Autenticação** | NextAuth.js v5 |
+| **Validação** | Zod |
+| **UI** | Tailwind CSS + Lucide Icons |
+| **Infraestrutura** | Docker & Docker Compose |
+| **Notificações** | React Hot Toast |
 
-## 💻 Como rodar o projeto localmente
+---
 
-Como a aplicação é containerizada com Docker, subir o ambiente é extremamente simples.
+## 🏗️ Arquitetura
+
+```
+next-app/
+├── app/
+│   ├── actions/          ← Server Actions (Backend seguro)
+│   ├── (rotas)/          ← Client Components (Frontend)
+│   └── components/       ← Componentes reutilizáveis (UI)
+├── prisma/
+│   └── schema.prisma     ← Modelo de dados
+├── .env.example
+├── Dockerfile
+└── docker-compose.yml
+```
+
+### 🔐 Segurança
+- Server Actions (`'use server'`) - Backend 100% protegido
+- Validação **Zod** em todas as entradas
+- Autenticação NextAuth.js com bcryptjs
+- Nenhuma lógica de banco exposta ao frontend
+
+---
+
+## 🚀 Como Rodar Localmente
 
 ### Pré-requisitos
-* [Docker](https://www.docker.com/) e Docker Compose instalados.
-* Node.js (opcional, recomendado para intellisense no editor).
+- Docker e Docker Compose instalados
+- Git
 
-### Passo a Passo
+### Setup em 3 Passos
 
-1. **Clone o repositório:**
+**1. Clone e entre na pasta:**
 ```bash
-git clone [https://github.com/SeuUsuario/SistemaCadastro.git](https://github.com/SeuUsuario/SistemaCadastro.git)
+git clone https://github.com/Brenobbfreitas/SistemaCadastro.git
 cd SistemaCadastro
+```
 
-# Conexão interna do Docker (Aplicação -> Banco)
+**2. Crie o arquivo `.env` na raiz:**
+```env
+# Banco de Dados
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=root
+POSTGRES_DB=sysmanager
 DATABASE_URL="postgresql://postgres:root@db:5432/sysmanager?schema=public"
 
-# Configuração de Autenticação (NextAuth)
-AUTH_SECRET="sua_chave_secreta_aqui_pode_ser_qualquer_texto"
+# Autenticação
+AUTH_SECRET="sua_chave_secreta_aqui"
 AUTH_URL="http://localhost:3000"
+```
 
-3. **Inicialização do Projeto
+**3. Suba o Docker:**
+```bash
 docker compose up -d
 
-# Gera o cliente de tradução do Prisma
+# Gera cliente Prisma
 docker compose exec app npx prisma generate
 
-# Sincroniza as tabelas com o PostgreSQL
+# Sincroniza banco
 docker compose exec app npx prisma db push
+```
 
-Abra o seu navegador e acesse: http://localhost:3000
+**Acesse:** http://localhost:3000
+
+---
+
+## 🐛 Desafios Técnicos Já Resolvidos
+
+✅ **Serialização Server-to-Client**
+- Conversão do tipo `Decimal` (Prisma) para compatibilidade com Client Components
+
+✅ **Docker + Linux/WSL**
+- Correção de permissões (`EACCES`) para instalação de pacotes dentro do container
+
+✅ **Prisma + Turbopack**
+- Cache e regeneração correta do Prisma Client dentro do container
+
+---
+
+## 📋 Roadmap (V1.1)
+
+- [ ] Conversão automática de projetos "COMPLETED" em transações
+- [ ] Gráficos analíticos (Gastos Pessoais vs Faturamento)
+- [ ] CRUD completo: editar e deletar transações/projetos
+- [ ] Filtros avançados por data e categoria
+
+---
+
+## 📁 Estrutura de Arquivos
+
+```
+SistemaCadastro/
+├── next-app/                 ← Aplicação Next.js
+│   ├── app/
+│   ├── prisma/
+│   ├── public/
+│   └── Dockerfile
+├── docker-compose.yml        ← Orquestração
+├── .env.example
+└── README.md
+```
+
+---
+
+## 🤝 Contribuições
+
+Melhorias e sugestões são bem-vindas! Abra uma issue ou PR.
+
+---
+
+## 📄 Licença
+
+Projeto de código aberto.
+
+---
+
+**Desenvolvido por:** [Breno Barreto](https://github.com/Brenobbfreitas)  
+**Última atualização:** Maio 2026
