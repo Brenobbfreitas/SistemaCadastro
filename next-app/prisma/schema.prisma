@@ -91,7 +91,9 @@ model Client {
   id        Int       @id @default(autoincrement())
   name      String    // Ex: "Empresa XPTO"
   email     String?   
-  phone     String?   
+  phone     String?
+  company   String?   //  suportar o campo "Empresa / Cargo" do seu formulário
+  notes     String?   //  suportar o campo "Observações Adicionais"   
   
   userId    Int       // Quem é o "dono" deste cliente? (O utilizador logado)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -185,3 +187,4 @@ model Transaction {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
+

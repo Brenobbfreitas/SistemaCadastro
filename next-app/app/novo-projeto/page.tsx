@@ -111,8 +111,13 @@ export default function NovoProjetoPage() {
         {/* PASSO 2: O FORMULÁRIO DE PROJETO */}
         {step === 2 && (
           <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-[2rem] overflow-hidden shadow-2xl animate-in slide-in-from-right-8 duration-300">
-            <form action={handleSubmit} className="p-6 sm:p-10 space-y-8">
-              
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(new FormData(e.currentTarget));
+              }} 
+              className="p-6 sm:p-10 space-y-8"
+            >              
               <div className="space-y-6">
                 {/* Título do Projeto */}
                 <div className="space-y-2">

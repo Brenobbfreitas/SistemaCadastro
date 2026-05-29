@@ -1,4 +1,5 @@
-import Link from "next/link";
+// 1. IMPORTAÇÃO ESSENCIAL: Diz ao Next.js como interpretar as tags <Link>
+import Link from "next/link"; 
 import { auth, signOut } from "@/auth";
 import { LayoutDashboard, Users, FolderKanban, LogOut, User, LogIn } from "lucide-react";
 
@@ -12,7 +13,7 @@ export default async function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* LOGO */}
+          {/* LOGO DO SISTEMA */}
           <Link href={session ? "/home" : "/"} className="flex items-center gap-2 group">
             <div className="h-8 w-8 bg-sky-600 rounded-lg flex items-center justify-center shadow-lg shadow-sky-900/40 group-hover:scale-105 transition-transform">
               <span className="text-white font-black text-xs">SM</span>
@@ -26,17 +27,24 @@ export default async function Navbar() {
           <div className="flex items-center gap-4">
             {session ? (
               <>
-                {/* LINKS DE NAVEGAÇÃO PRINCIPAL (Esconde no telemóvel muito pequeno, mostra no tablet/PC) */}
+                {/* LINKS DE NAVEGAÇÃO PRINCIPAL (Redirecionam para as listas gerais) */}
                 <div className="hidden md:flex items-center gap-1 mr-2">
+                  
+                  {/* Link para o Dashboard */}
                   <Link href="/home" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all">
                     <LayoutDashboard size={16} className="text-sky-500" /> Dashboard
                   </Link>
-                  <Link href="/novo-cliente" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all">
+                  
+                  {/* Link para a Nova Página de Listagem de Clientes */}
+                  <Link href="/clientes" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all">
                     <Users size={16} className="text-sky-500" /> Clientes
                   </Link>
-                  <Link href="/novo-projeto" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all">
+                  
+                  {/* Link para a Nova Página de Listagem de Projetos */}
+                  <Link href="/projetos" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all">
                     <FolderKanban size={16} className="text-purple-500" /> Projetos
                   </Link>
+                  
                 </div>
 
                 {/* PERFIL DO USUÁRIO E BOTÃO SAIR */}
@@ -68,7 +76,7 @@ export default async function Navbar() {
                 </div>
               </>
             ) : (
-              /* ESTADO DESLOGADO */
+              /* ESTADO DESLOGADO (Se o utilizador não tiver sessão ativa) */
               <>
                 <Link href="/login" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                   Login
